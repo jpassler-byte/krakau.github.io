@@ -1,0 +1,21 @@
+{
+  "name": "Krakau Reisetagebuch",
+  "short_name": "Tagebuch",
+  "description": "Erinnern für die Zukunft - Studienfahrt Krakau",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f9f4",
+  "theme_color": "#2b5329",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
