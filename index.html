@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Erinnern für die Zukunft - Reisetagebuch</title>
+    
+    <!-- PWA Einbindung -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2b5329">
+    <link rel="apple-touch-icon" href="icon.png">
+    
+    <style>
+        :root {
+            /* Neues Farbschema: Dunkelgrün */
+            --primary-color: #2b5329; 
+            --primary-light: #3e733b;
+            --bg-color: #f4f9f4;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #d2e3d2;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        header p {
+            margin: 5px 0 0 0;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            background: var(--card-bg);
+            border-bottom: 2px solid var(--border-color);
+            position: sticky;
+            top: 55px;
+            z-index: 99;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 60px;
+            padding: 12px 10px;
+            text-align: center;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: bold;
+            color: #777;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.3rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        details {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--primary-color);
+            outline: none;
+            font-size: 1.05rem;
+        }
+        
+        summary::marker {
+            color: var(--primary-color);
+        }
+
+        details p {
+            font-size: 0.95rem;
+            color: #444;
+            margin-top: 15px;
+            text-align: justify;
+        }
+
+        details h4 {
+            margin: 20px 0 10px 0;
+            color: var(--primary-color);
+        }
+
+        .journal-entry {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .journal-entry h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--primary-color);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            border: 1px dashed #aebcae;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+            background: #fdfdfd;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: #fff;
+            border-style: solid;
+        }
+
+        .photo-upload {
+            margin-top: 10px;
+        }
+
+        .photo-upload label {
+            display: inline-block;
+            background: var(--primary-light);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .photo-upload input[type="file"] {
+            display: none;
+        }
+
+        .preview-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .preview-img {
+            max-width: 100%;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: block;
+        }
+
+        .delete-img-btn {
+            background: #d9534f;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 8px;
+            display: block;
+            width: 100%;
+        }
+
+        .info-box {
+            background: #eef5f9;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .delete-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #d9534f;
+            color: white;
+            text-align: center;
+            border: none;
+            font-size: 1rem;
+            margin-top: 40px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Erinnern für die Zukunft</h1>
+        <p>Mein Reisetagebuch (Lokal & Offline)</p>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('so')">So</button>
+        <button class="tab-btn" onclick="openTab('mo')">Mo</button>
+        <button class="tab-btn" onclick="openTab('di')">Di</button>
+        <button class="tab-btn" onclick="openTab('mi')">Mi</button>
+        <button class="tab-btn" onclick="openTab('do')">Do</button>
+        <button class="tab-btn" onclick="openTab('fr')">Fr</button>
+    </div>
+
+    <!-- SONNTAG -->
+    <div id="so" class="tab-content active">
+        <h2>Sonntag, 27.09.</h2>
+        <p><strong>Anreise – erste Gedanken</strong></p>
+        
+        <details>
+            <summary>📖 Anreise – erste Gedanken</summary>
+            <p>Liebe Teilnehmerinnen und Teilnehmer,</p>
+            <p>die vor uns liegende Zeit in Krakau wird intensiv, bewegend und lehrreich sein. Wir werden eine Stadt erkunden, die reich an Kultur und Schönheit ist, aber auch ein Ort, der untrennbar mit einem der dunkelsten Kapitel der Menschheitsgeschichte verbunden ist: dem Holocaust. Diese Broschüre soll euch als Begleiter dienen, als roter Faden, der die vielen Eindrücke und Informationen, die auf euch zukommen werden, miteinander verknüpft. Die Führungen werden euch mit Fakten und Geschichten konfrontieren; dieser Text soll helfen, die größeren Zusammenhänge zu verstehen und das Gesehene einzuordnen. Es gibt genügend Platz für eure Gedanken, Gefühle, Fragen und für alles, was ihr zur Erinnerung festhalten wollt. Nutzt diesen Raum, um aus dieser Broschüre euer eigenes Reisetagebuch zu machen.</p>
+            <p>Ihr habt im Vorfeld den Film „Schindlers Liste“ gesehen. Er wird uns auf dieser Reise immer wieder begegnen – nicht als exaktes historisches Dokument, aber als eine eindrucksvolle Erzählung, die den Menschen hinter den unvorstellbaren Zahlen Gesichter gibt und uns hilft, die Ereignisse emotional zu begreifen.</p>
+            <h4>Der Nationalsozialismus und der Holocaust</h4>
+            <p>Um zu verstehen, was in Krakau geschah, müssen wir einen kurzen Blick auf die Ideologie werfen, die all dem zugrunde lag. Der Nationalsozialismus, der 1933 in Deutschland an die Macht kam, basierte auf einer rassistischen und antisemitischen Weltanschauung. Die Nazis glaubten an die Überlegenheit der „germanischen Rasse“ und sahen die Juden als „minderwertige Rasse“ und Feindbild, das für alle Probleme Deutschlands verantwortlich gemacht wurde.</p>
+            <p>Diese Ideologie führte zu einer schrittweisen Ausgrenzung und Entrechtung der jüdischen Bevölkerung. Ab 1933 wurden Juden aus dem öffentlichen Leben verdrängt, ihre Geschäfte boykottiert und ihre Rechte immer weiter eingeschränkt. Mit dem Ausbruch des Zweiten Weltkriegs 1939 radikalisierte sich die Verfolgung. Die Nazis begannen, die jüdische Bevölkerung in besetzten Gebieten in Ghettos zusammenzupferchen und zur Sklavenarbeit zu zwingen. Schließlich mündete dieser Hass in der sogenannten „Endlösung der Judenfrage“: dem systematisch geplanten und industriell durchgeführten Völkermord an den europäischen Juden.</p>
+        </details>
+
+        <div class="journal-entry">
+            <h3>✎ Meine Erwartungen</h3>
+            <p style="font-size:0.85rem; color:#666;">Krakau, Auschwitz, Gemeinschaft ...<br>Was erhoffe ich mir von dieser Fahrt?<br>Wovor habe ich vielleicht auch ein bisschen Respekt?</p>
+            <textarea id="so_erwartungen" placeholder="Tippe hier deine Gedanken ein..."></textarea>
+        </div>
+
+        <div class="journal-entry">
+            <h3>📷 Platz für die Busfahrt</h3>
+            <p style="font-size:0.85rem; color:#666;">Skizzen, Gesprächsfetzen, meine Roadtrip-Playlist ...</p>
+            <textarea id="so_busfahrt" placeholder="Notizen zur Fahrt..."></textarea>
+            <div class="photo-upload">
+                <label for="img_so_bus">Foto hinzufügen</label>
+                <input type="file" id="img_so_bus" accept="image/*" onchange="handleImage(this, 'data_so_bus')">
+                <div id="container_data_so_bus" class="preview-container" style="display:none;">
+                    <img id="preview_data_so_bus" class="preview-img">
+                    <button class="delete-img-btn" onclick="deleteImage('data_so_bus', 'img_so_bus')">Foto löschen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MONTAG -->
+    <div id="mo" class="tab-content">
+        <h2>Montag, 28.09.</h2>
+        <p><strong>Das jüdische Krakau – Leben, Kultur, Genuss</strong></p>
+        <p><i>Heute geht es zunächst um das pulsierende Leben und die Geschichte der Stadt – ein bewusster Ausgleich, bevor wir uns in den nächsten Tagen der schweren Thematik zuwenden.</i></p>
+
+        <details>
+            <summary>📖 Vormittag: Stadtrallye</summary>
+            <p>Bevor wir in die jüdische Geschichte Krakaus eintauchen, lernt ihr bei der Stadtrallye die Altstadt kennen: den Rynek Główny, einen der größten mittelalterlichen Marktplätze Europas, die Tuchhallen und den Wawel, Burg- und Kathedralenhügel der polnischen Könige. Krakau war über Jahrhunderte Residenz- und Krönungsstadt Polens – dieses königliche Erbe prägt die Altstadt bis heute.</p>
+        </details>
+
+        <div class="journal-entry">
+            <h3>✎ Stadtrallye-Notizen</h3>
+            <p style="font-size:0.85rem; color:#666;">Mein Lieblingsort in Krakau bisher ...<br>Etwas Überraschendes, das ich entdeckt habe ...</p>
+            <textarea id="mo_rallye" placeholder="Deine Notizen..."></textarea>
+        </div>
+
+        <details>
+            <summary>📖 Nachmittag: Kazimierz</summary>
+            <p>Unsere Spurensuche beginnt im Viertel Kazimierz. Über 500 Jahre lang war dies das blühende Zentrum jüdischen Lebens in Krakau – eine eigene Stadt innerhalb der Stadt. Stellt euch die Gassen nicht so vor, wie sie heute sind, sondern erfüllt vom Klang des Jiddischen, den Gerüchen aus koscheren Bäckereien und den lebhaften Diskussionen in den Synagogen und Lehrhäusern. Vor dem Zweiten Weltkrieg lebten hier und in der Umgebung über 65.000 Juden.</p>
+            <p>Die kleine und unscheinbare Remuh-Synagoge aus dem 16. Jahrhundert ist historisch und spirituell einer der wichtigsten jüdischen Orte in ganz Europa. Betritt man sie, spürt man sofort eine andere Atmosphäre als in den größeren, repräsentativen Gotteshäusern. Die Einrichtung ist schlicht und authentisch und folgt strengen orthodoxen Traditionen. In der Mitte des Raumes steht die Bima, das Pult, von dem aus die Tora verlesen wird, umgeben von einem kunstvollen schmiedeeisernen Gitter. An der Ostwand, in Richtung Jerusalem, befindet sich der Aron Ha-Kodesh, der heilige Schrein, in dem die wertvollen Tora-Rollen aufbewahrt werden.</p>
+            <p>Das Besondere an der Remuh-Synagoge ist, dass sie kein Museum ist, sondern das lebendige Herz der kleinen, aber aktiven orthodoxen Gemeinde Krakaus. Hier finden bis heute regelmäßig Gottesdienste statt. Aus diesem Grund ist sie auch ein zentraler Anziehungspunkt für jüdische Besucher und Pilger aus aller Welt. Sie kommen hierher, um am Grab des großen Gelehrten Rabbi Moses Isserles („Remuh“) zu beten und sich mit der reichen geistigen Tradition des polnischen Judentums zu verbinden.</p>
+            <p>Direkt hinter der Synagoge betritt man eine andere Welt: den Alten Friedhof. Er wurde im 16. Jahrhundert angelegt und bis etwa 1800 genutzt. Während der deutschen Besatzung im Zweiten Weltkrieg wurde der Friedhof von den Nazis fast vollständig zerstört. Die Grabsteine wurden herausgerissen und als Pflastersteine für Straßen und Lagerplätze missbraucht. Nach dem Krieg wurden Tausende von zerbrochenen Grabsteinfragmenten aus dem Boden geborgen. Man mauerte sie in die innere Friedhofsmauer ein und schuf so eine Art „Klagemauer“, ein erschütterndes Mosaik aus zerstörter Erinnerung, das heute die Besucher empfängt.</p>
+            <p>Das Herzstück des Friedhofs und sein größtes Wunder ist das Grab von Rabbi Moses Isserles selbst. Es ist das einzige, das die Zerstörung durch die Nazis unversehrt überstanden hat. Eine Legende besagt, dass die deutschen Soldaten, die versuchten, den Grabstein zu zerstören, von einer unsichtbaren Macht daran gehindert wurden. Bis heute ist sein Grab eine der wichtigsten jüdischen Pilgerstätten in Polen. Besucher hinterlassen kleine Zettel mit Gebeten (kvitelach) in den Spalten des Grabsteins und legen kleine Steine darauf ab. Dieser Brauch ist ein Zeichen des Respekts und der Ehrerbietung – der Stein ist beständiger als eine Blume und symbolisiert, dass der Verstorbene nicht vergessen ist. Zusammen bilden Synagoge und Friedhof einen der heiligsten und berührendsten jüdischen Orte in ganz Europa, einen Ort, der Zerstörung überlebt hat und heute wieder von Gebeten und Gedenken erfüllt ist.</p>
+            <p>Der Name der Hohen Synagoge leitet sich von ihrer einzigartigen Bauweise ab: Der Gebetsraum befand sich im ersten Stock, über den Läden im Erdgeschoss. Dies war eine gängige Praxis, um den heiligen Raum vom Lärm und Schmutz der Straße zu trennen. Heute ist sie nicht mehr als Synagoge in Gebrauch, sondern beherbergt oft Fotoausstellungen, die das jüdische Leben vor dem Holocaust dokumentieren.</p>
+            <p>Die Isaak-Synagoge, ein großer prachtvoller Barockbau, wurde im 17. Jahrhundert von einem reichen Kaufmann namens Izaak Jakubowicz gestiftet. Eine Legende erzählt, Izaak habe von einem Schatz geträumt, der unter einer Brücke in Prag vergraben sei. Als er dorthin reiste, erzählte ihm ein Wachmann, er habe ebenfalls geträumt – von einem Schatz, der im Ofen eines Juden namens Izaak in Kazimierz versteckt sei. Izaak kehrte zurück, fand den Schatz in seinem eigenen Haus und finanzierte damit den Bau dieser beeindruckenden Synagoge.</p>
+            <p>Am Rande von Kazimierz gelegen, zeigt die Tempel-Synagoge aus dem 19. Jahrhundert ein ganz anderes Gesicht des Judentums. Sie wurde von der Gemeinde des Reformjudentums erbaut. Ihre Architektur mit maurischen Elementen und die prächtige Innenausstattung mit einer Orgel und einem Chor zeugen von dem Wunsch, jüdische Tradition mit der modernen europäischen Kultur zu verbinden. Sie ist heute das Zentrum der liberalen jüdischen Gemeinde und ein wichtiger Ort für Konzerte und Veranstaltungen, insbesondere während des Jüdischen Kulturfestivals.</p>
+            <p>Das Herz von Kazimierz war die Gegend um die heutige Szeroka-Straße. Auf dem Plac Nowy (Neuer Platz) befand sich der Fleischmarkt mit kleinen Läden und Ständen, in denen koschere Metzger ihre Waren anboten. Es war ein Ort des Handels, des Austauschs und des täglichen Lebens. Heute befinden sich in den Außenwänden dieses Rundbaus zahlreiche kleine Verkaufsfenster, aus denen heraus die Zapiekanki frisch zubereitet und verkauft werden. Diese Spezialität besteht aus einem halben Baguette, klassisch mit Champignons und viel Käse belegt und im Ofen gebacken. Ihr könnt zwischen vielen verschiedenen Belägen wählen. Ein Tipp für die nächsten Tage.</p>
+            <p>Nach dem Holocaust war Kazimierz ein verlassenes, heruntergekommenes Viertel. Die meisten seiner jüdischen Bewohner waren ermordet worden. Erst nach dem Fall des Kommunismus 1989 und insbesondere durch den Film „Schindlers Liste“, der hier gedreht wurde, erwachte das Viertel zu neuem Leben.</p>
+            <p>Entlang der Szeroka-Straße und in den Gassen finden sich heute zahlreiche Restaurants, die jüdische Küche anbieten. Sie schaffen mit ihrer Einrichtung und der oft live gespielten Klezmer-Musik eine Atmosphäre, die an die Vorkriegszeit erinnern soll. Es ist wichtig zu wissen, dass die meisten dieser Restaurants zwar „koscher-stil“ kochen, aber nicht streng koscher sind. Für Besucher, die sich strikt an die Speisegesetze halten, gibt es jedoch auch zertifizierte Angebote, wie zum Beispiel im koscheren Hotel Eden, das alle Anforderungen erfüllt – von der Küche bis hin zum speziellen Schabbat-Aufzug, der an jedem Stockwerk automatisch hält.</p>
+            <p>Vor dem Krieg war Polen mit 3,5 Millionen Juden die Heimat der größten jüdischen Gemeinschaft Europas. Der Holocaust und später die antisemitischen Kampagnen der Nachkriegszeit unter kommunistischer Herrschaft haben dieses reiche Leben fast vollständig ausgelöscht. Heute ist die jüdische Gemeinde in Polen sehr klein, zählt aber wieder einige Tausend Mitglieder. Seit 1989 erlebt sie eine bemerkenswerte Wiedergeburt. In Krakau ist das Jewish Community Centre (JCC), das 2008 eröffnet wurde, zum Herzstück dieses neuen Lebens geworden. Es ist ein Treffpunkt für die wenigen Holocaust-Überlebenden, ihre Kinder und Enkel sowie für junge Polen, die ihre jüdischen Wurzeln wiederentdecken. Es ist ein offenes Haus, das Kurse, Feste und soziale Aktivitäten anbietet.</p>
+            <p>Das heutige Kazimierz ist also ein komplexer Ort: Es ist ein lebendiges Denkmal, ein Touristenmagnet und gleichzeitig das Zentrum einer kleinen, aber wachsenden jüdischen Gemeinde. Das größte Zeichen dieser Wiedergeburt ist das jährliche Jüdische Kulturfestival, das größte seiner Art weltweit. Für neun Tage im Sommer verwandelt sich Kazimierz in eine pulsierende Bühne für jüdische Musik, Kunst und Diskussionen aus aller Welt und zieht Hunderttausende von Besuchern an. Es ist ein kraftvolles Statement, dass die jüdische Kultur in Krakau nicht nur eine Sache der Vergangenheit ist, sondern auch eine lebendige Gegenwart und Zukunft hat.</p>
+        </details>
+
+        <div class="journal-entry">
+            <h3>📷 Impressionen aus Kazimierz</h3>
+            <p style="font-size:0.85rem; color:#666;">Foto, Skizze, Gedanken zu Remuh-Synagoge und Friedhof...</p>
+            <textarea id="mo_kazimierz" placeholder="Deine Gedanken..."></textarea>
+            <div class="photo-upload">
+                <label for="img_mo_kaz">Foto hinzufügen</label>
+                <input type="file" id="img_mo_kaz" accept="image/*" onchange="handleImage(this, 'data_mo_kaz')">
+                <div id="container_data_mo_kaz" class="preview-container" style="display:none;">
+                    <img id="preview_data_mo_kaz" class="preview-img">
+                    <button class="delete-img-btn" onclick="deleteImage('data_mo_kaz', 'img_mo_kaz')">Foto löschen</button>
+                </div>
+            </div>
+        </div>
+
+        <details>
+            <summary>📖 Abendessen & Klezmer-Musik</summary>
+            <p>Wenn wir im jüdischen Restaurant „Ariel“ essen, genießen wir Gerichte, die nach traditionellen jüdischen Rezepten zubereitet werden. Das bedeutet aber nicht automatisch, dass das Essen „koscher“ ist. Koschere Speisen müssen nach den strengen jüdischen Speisegesetzen (der Kaschrut) zubereitet werden. Dazu gehört die strikte Trennung von fleischigen und milchigen Produkten, das Verbot bestimmter Tiere (z.B. Schwein) und eine spezielle rituelle Schlachtung. Ein Restaurant muss unter der Aufsicht eines Rabbiners stehen, um als koscher zertifiziert zu sein. Wir erleben also die jüdische Küchenkultur, nicht aber streng koscheres Essen.</p>
+            <p>Doch was macht diese Küchenkultur aus? Die jüdische Küche ist keine einzelne, einheitliche Küche, sondern so vielfältig wie die weltweit verstreuten jüdischen Gemeinden. Man unterscheidet vor allem zwei große Traditionen:</p>
+            <p><strong>Die aschkenasische Küche</strong> ist die Küche der Juden aus Mittel- und Osteuropa, also die Tradition, die in Krakau heimisch war. Sie ist geprägt von den kälteren Klimazonen und den verfügbaren Zutaten. Die Gerichte sind oft herzhaft, wärmend und sättigend. Einige Klassiker, die ihr vielleicht auf der Speisekarte findet, sind:</p>
+            <ul>
+                <li><strong>Gefilte Fisch:</strong> Gekochte oder pochierte Klöße aus gehacktem Fisch (oft Karpfen), die traditionell als Vorspeise am Schabbat gegessen werden.</li>
+                <li><strong>Hühnersuppe mit Matzeknödeln (Kneidlach):</strong> Weltweit als „jüdisches Penicillin“ bekannt, ist diese Suppe ein Klassiker bei Erkältungen und an Feiertagen.</li>
+                <li><strong>Latkes:</strong> Knusprige Kartoffelpuffer, die besonders zum Lichterfest Chanukka gegessen werden. Sie werden in Öl gebraten, was an das Wunder im Tempel erinnert, als ein Krug Öl so lange für die Menora reichte, bis neues koscheres Öl hergestellt werden konnte.</li>
+                <li><strong>Cholent (Tscholent):</strong> Ein deftiger Eintopf aus Fleisch, Bohnen, Kartoffeln und Graupen. Seine Besonderheit liegt in der Zubereitung: Da am Schabbat keine Arbeit (auch kein Kochen) verrichtet werden darf, wird der Cholent bereits am Freitag vorbereitet und über Nacht bei niedriger Temperatur im Ofen gegart. So hat man am Samstagmittag eine warme Mahlzeit, ohne ein religiöses Gebot zu brechen.</li>
+            </ul>
+            <p>Dieses Gericht wird in „Schindlers Liste“ erwähnt. Im Zug unterhalten sich die „Schindlerfrauen“ darüber, was alles in dieses Gericht gehört und was nicht. Dieses Gespräch symbolisiert die Hoffnung auf Freiheit, auf eine Zeit, in der sie wieder ein ganz normales Leben führen und für ihre Familien kochen können, denn in diesem Moment sie wissen noch nicht, dass der Zug fehlgeleitet wird und sie nach Auschwitz bringt.</p>
+            <p><strong>Die sephardische Küche</strong> ist die Küche der Juden aus dem Mittelmeerraum, Nordafrika und dem Nahen Osten. Sie ist leichter und verwendet viel Olivenöl, frisches Gemüse, Hülsenfrüchte und Kräuter. Gerichte wie Shakshuka (Eier in Tomatensoße), Hummus oder Falafel haben hier ihre Wurzeln und sind heute Teil der israelischen Nationalküche. Wer diese Gerichte probieren möchte, sollte das Restaurant „Hamsa“ besuchen.</p>
+            <p>Essen ist in der jüdischen Kultur weit mehr als nur Nahrungsaufnahme. Es ist ein zentraler Bestandteil von Familie, Gemeinschaft und religiöser Tradition. Jedes Fest hat seine eigenen symbolischen Speisen, und die gemeinsamen Mahlzeiten, besonders am Schabbat, sind das Herzstück des familiären Zusammenlebens. Die Gerichte erzählen Geschichten von Migration, Anpassung und dem Festhalten an der eigenen Identität über Jahrhunderte hinweg.</p>
+            
+            <h4>Die Klezmer-Musik</h4>
+            <p>Neben den Orten und Geschichten werden wir auch in die Klangwelt des osteuropäischen Judentums eintauchen, denn wir werden ein Klezmer-Konzert erleben. Die Musik, die wir hören werden, ist keine reine Unterhaltungsmusik. Sie ist die Seele und der Herzschlag des Schtetls, der jüdischen Städtchen und Viertel Osteuropas, wie es Kazimierz einst war.</p>
+            <p>Der Begriff Klezmer leitet sich aus dem Hebräischen ab: „Kley“ (Gefäß/Instrument) und „Zemer“ (Lied), also „Instrument des Liedes“. Ursprünglich bezeichnete es die Musiker selbst, erst später den Musikstil. Diese Musik, die oft von Klarinette, Geige, Akkordeon und Kontrabass getragen wird, ist unglaublich ausdrucksstark. Sie kann im einen Moment überschwänglich fröhlich und tanzbar sein, im nächsten zutiefst melancholisch und klagend. Man sagt, die Klezmer-Instrumente ahmen die menschliche Stimme nach – sie können lachen, weinen, schluchzen und beten.</p>
+            <p>Diese tiefe Emotionalität ist eng mit dem Chassidismus verbunden, einer spirituellen Erweckungsbewegung, die im 18. Jahrhundert in Osteuropa entstand. Die Chassidim (die Anhänger) glaubten, dass man Gott nicht nur durch das Studium der heiligen Schriften, sondern auch durch Freude, Tanz und Gesang nahekommen kann. Eine zentrale Rolle spielt dabei der Nigun, eine wortlose, gefühlvolle Melodie, die oft wiederholt wird, um die Seele in einen Zustand spiritueller Ekstase zu versetzen.</p>
+            <p>Die Klezmer-Musiker waren die professionellen Instrumentalisten, die diese spirituelle Energie in die weltlichen Feste der Gemeinschaft trugen. Sie spielten bei Hochzeiten und anderen Feierlichkeiten und schufen eine Musik, die sowohl zum Tanzen einlud als auch die tiefsten Gefühle der Menschen widerspiegelte. Wenn wir heute Klezmer hören, lauschen wir also nicht nur einer Musikrichtung. Wir hören ein lebendiges Echo der Welt, die im Holocaust fast vollständig vernichtet wurde – ein Echo voller Lebensfreude, Trauer, Hoffnung und Spiritualität.</p>
+            <p>Auch die Musik im Film „Schindlers Liste“ ist eng mit der traditionellen jüdischen Musik verbunden. Zum Beispiel in der Szene, als das Ghetto geräumt wird und Oskar Schindler mit seiner Begleitung während eines Ausritts von oberhalb des Ghettos das Geschehen beobachtet und dabei das Mädchen im roten Mantel entdeckt. Hier erklingt das jiddische Lied „Oyfn Pripetshik“ (Auf dem Herd). Es ist ein altes Wiegenlied über einen Rabbi, der Kindern das Alphabet beibringt – ein Symbol für die Welt der jüdischen Kultur, des Lernens und der Familie, die in dieser Nacht für immer zerstört wurde.</p>
+        </details>
+
+        <div class="journal-entry">
+            <h3>✎ Kulinarisches & Musik</h3>
+            <p style="font-size:0.85rem; color:#666;">Welche Gerichte gab es? Wie hat das Essen geschmeckt?<br>Klezmer wird oft als Musik beschrieben, die weint und lacht zugleich. Wie hat sich die Musik heute Abend für mich angefühlt?</p>
+            <textarea id="mo_abend" placeholder="Deine Bewertung und Eindrücke..."></textarea>
+        </div>
+    </div>
+
+    <!-- DIENSTAG -->
+    <div id="di" class="tab-content">
+        <h2>Dienstag, 29.09.</h2>
+        <p><strong>Spurensuche – Ghetto und Płaszów</strong></p>
+
+        <details>
+            <summary>📖 Das Ghetto in Podgórze</summary>
+            <p>Nachdem wir gestern das historische jüdische Viertel Kazimierz erkundet haben, überqueren wir heute die Weichsel und erkunden den Stadtteil Podgórze. Es ist ein entscheidender geografischer und historischer Wechsel, denn hier, und nicht im touristisch bekannteren Kazimierz, errichteten die deutschen Besatzer im März 1941 das Krakauer Ghetto. Der Zweck war klar: die jüdische Bevölkerung zu isolieren, zu kontrollieren, auszubeuten und sie für die spätere Deportation und Vernichtung zu konzentrieren. An zwei Stellen in Podgórze sind noch originale Fragmente der Mauer erhalten, die das Ghetto einst umschloss. Sie sind stille, aber eindrückliche Zeugen der Isolation und des Leidens der Eingeschlossenen.</p>
+            <p>Heute ist Podgórze ein normaler Stadtteil, doch zahlreiche Gedenkorte und Spuren erinnern an die tragische Geschichte.</p>
+            <h4>Die Errichtung und das Leben im abgeriegelten Bezirk</h4>
+            <p>Auf Befehl der Nazis mussten über 15.000 Juden in ein kleines, ummauertes Gebiet ziehen, in dem zuvor nur etwa 3.000 Menschen gelebt hatten. Die Enge war unvorstellbar. Familien wurden gezwungen, sich winzige Zimmer zu teilen.</p>
+            <p>Das Ghetto wurde von einer Mauer umgeben, deren Bögen von den Architekten zynischerweise in Form jüdischer Grabsteine gestaltet wurden – gedacht als eine ständige, steinerne Drohung und ein Symbol dafür, dass es für die Bewohner keinen Ausweg außer dem Tod geben sollte. Diese Form ist jedoch mehrdeutig und spiegelt die trügerische Hoffnung einiger Bewohner wider. Im Film „Schindlers Liste“ wird diese Ambivalenz an einer Feuertonne diskutiert: Während die einen die Mauer als Bedrohung sehen, empfinden andere sie als Schutz, da man nun „unter sich“ und vor den Angriffen der Soldaten sicher sei. Die Bögen können dabei nicht nur als Grabsteine, sondern auch als Symbol für die Tafeln mit den Zehn Geboten verstanden werden – ein Zeichen der Hoffnung auf eine göttliche Ordnung und feste Regeln.</p>
+            <p>Diese Hoffnung auf eine verlässliche Ordnung steht jedoch in krassem Gegensatz zu der schrecklichen Wahrheit, die Helene Hirsch im Film gegenüber Oskar Schindler formuliert. Sie erklärt ihm die unerträgliche Willkür des Lagerlebens unter Amon Göth: Es gibt keine erkennbaren Regeln. Niemand kann vorhersagen, welche Handlung oder welches Wort den sicheren Tod bedeutet. Wenn es Regeln gäbe, so Helene, könnte man sie befolgen und überleben. Doch es herrscht nur absolute, unberechenbare Willkür. So wird das mögliche Symbol für Gottes Gesetz an der Ghettomauer zur bitteren Ironie in einer Welt, in der jede menschliche und göttliche Regel außer Kraft gesetzt schien.</p>
+            <p>Das Leben im Ghetto war ein täglicher Kampf ums Überleben. Hunger war allgegenwärtig, die Essensrationen waren auf ein Minimum beschränkt. Krankheiten breiteten sich aufgrund der katastrophalen hygienischen Bedingungen und der Überbevölkerung rasant aus. Gleichzeitig herrschte ein brutales Regime aus Zwangsarbeit und Terror. Trotz dieser unvorstellbaren Not versuchten die Menschen, ein Minimum an Normalität und Würde zu bewahren. Es gab geheime Schulen und Suppenküchen. Religiöses Leben fand im Verborgenen statt.</p>
+            <p>Die Zucker-Synagoge war eine der wenigen Synagogen innerhalb der Ghettomauern, in der anfangs noch gebetet wurde. Später wurde sie von den Deutschen zweckentfremdet und als Lager für gestohlene Möbel und Besitztümer der deportierten Juden missbraucht – ein Symbol für die Zerstörung von Kultur und Glauben.</p>
+            <p>Der Platz der Ghettohelden (Plac Bohaterów Getta), der damals „Plac Zgody“ hieß, war das tragische Zentrum des Ghettos. Er war der „Umschlagplatz“ – der Ort, an dem die Bewohner bei den Deportationen zusammengetrieben und selektiert wurden und auf ihre Verschleppung in die Vernichtungslager warten mussten. Das eindringliche Denkmal, das heute den Platz prägt, besteht aus 70 großen, leeren Metallstühlen. Jeder Stuhl symbolisiert tausend ermordete Krakauer Juden und steht für die unvorstellbare Leere, die der Holocaust hinterlassen hat. Eine andere, ebenso eindringliche Lesart ist auch, dass die Stühle auf eine Rückkehr warten. Sie erinnern an die Möbel und Besitztümer, die die Menschen bei ihrer Deportation auf diesem Platz zurücklassen mussten. In dieser Deutung halten die Stühle symbolisch einen Platz frei für die ehemaligen Bewohner, die niemals zurückkehren konnten. Sie werden so zu stummen Zeugen, die in einem ewigen, vergeblichen Warten verharren und den unwiederbringlichen Verlust auf eine sehr persönliche Weise spürbar machen.</p>
+        </details>
+
+        <div class="journal-entry">
+            <h3>✎ Impuls Ghetto</h3>
+            <p style="font-size:0.85rem; color:#666;">Stell dir vor, du müsstest dein Zuhause heute verlassen und dürftest nur mitnehmen, was du tragen kannst. Was wäre das – und warum?</p>
+            <textarea id="di_ghetto" placeholder="Deine Gedanken..."></textarea>
+        </div>
+
+        <details>
+            <summary>📖 Die Adler-Apotheke & Liquidierung</summary>
+            <p>Direkt am Platz der Ghettohelden befindet sich ein kleines, unscheinbares Gebäude von immenser historischer Bedeutung: die Adler-Apotheke (Apteka pod Orłem). Sie wurde vom polnischen Apotheker Tadeusz Pankiewicz geführt und ist ein leuchtendes Beispiel für unerschütterlichen Mut und Mitmenschlichkeit.</p>
+            <p>Als die Deutschen das Ghetto errichteten, stand Pankiewicz vor einer Wahl: Er hätte seine Apotheke, die sich nun innerhalb der Mauern befand, auf die „arische“ Seite der Stadt verlegen können, wie es ihm angeboten wurde. Er entschied sich bewusst dagegen und beantragte, bleiben zu dürfen. So wurde er der einzige Nicht-Jude, der während der gesamten Zeit des Bestehens des Ghettos legal dort lebte und arbeitete. Zusammen mit seinen drei polnischen Mitarbeiterinnen wurde er zum stillen Helden und unbezahlbaren Zeugen der Tragödie.</p>
+            <p>Die Apotheke war weit mehr als nur ein Ort, an dem Medikamente verkauft wurden. Sie wurde zum Zentrum des Ghettos und zu einer Oase der Hoffnung. Pankiewicz und sein Team gaben Medikamente oft kostenlos an diejenigen ab, die sie sich nicht leisten konnten. Sie beschafften Beruhigungsmittel, die weinenden Kindern in Verstecken verabreicht wurden, um sie bei Razzien vor dem Entdecktwerden zu bewahren. Sie besorgten Haarfärbemittel, damit ältere Menschen jünger aussahen und bei Selektionen eine höhere Chance hatten, als „arbeitsfähig“ eingestuft zu werden. Die Apotheke war ein relativ sicherer Ort, an dem sich Menschen treffen, Informationen austauschen und Pläne schmieden konnten. Sie diente als inoffizielle Poststelle, über die Nachrichten, Lebensmittel, Geld und gefälschte Dokumente in das Ghetto hinein- und aus ihm herausgeschmuggelt wurden. Da die Apotheke direkt am „Umschlagplatz“ lag, wurden Pankiewicz und seine Mitarbeiter zu Augenzeugen der brutalen Deportationen. Von ihren Fenstern aus beobachteten sie das unvorstellbare Leid, die Selektionen und die Gewalt. Nach dem Krieg schrieb Pankiewicz seine Erinnerungen im Buch „Die Apotheke im Krakauer Ghetto“ nieder, das zu einem der wichtigsten Zeugnisse über das Leben und Sterben im Ghetto wurde. Während der finalen, mörderischen Liquidierung des Ghettos im März 1943 wurde die Apotheke zu einer Arche. Pankiewicz und sein Team versteckten Dutzende Juden in den Hinterräumen und im Keller und retteten sie so vor dem sicheren Tod, während draußen auf dem Platz das Massaker tobte.</p>
+            <p>Für seinen selbstlosen Einsatz wurde Tadeusz Pankiewicz nach dem Krieg von der israelischen Gedenkstätte Yad Vashem in Jerusalem als „Gerechter unter den Völkern“ geehrt – die höchste Auszeichnung für Nicht-Juden, die während des Holocaust ihr Leben riskierten, um Juden zu retten. Heute ist die Adler-Apotheke eine Zweigstelle des Historischen Museums der Stadt Krakau und erzählt eindringlich die Geschichte dieses einzigartigen Ortes des Widerstands und der Menschlichkeit.</p>
+            <p>In der Józefińska-Straße 14 befand sich das Hauptkrankenhaus des Ghettos. Dort versuchten Ärzte und Krankenschwestern unter unmöglichsten Bedingungen, den Menschen zu helfen und Leben zu retten. Während der Liquidierung des Ghettos wurde das Krankenhaus Schauplatz eines brutalen Massakers. Wie es auch im Film „Schindlers Liste“ dargestellt wurde, stürmte die SS das Gebäude und ermordete kaltblütig die Patienten in ihren Betten sowie viele Ärzte und Pfleger. Dieses Verbrechen zeigt die mörderische Ideologie der Nazis in ihrer reinsten Form: Kranke und Schwache galten als „lebensunwert“ und wurden als erste eliminiert.</p>
+            <h4>Zwangsarbeit und Liquidierung des Ghettos</h4>
+            <p>Ein zentraler Aspekt des Ghettos war die Zwangsarbeit. Viele Bewohner mussten in deutschen Fabriken arbeiten, die innerhalb oder außerhalb der Mauern lagen. Eine davon war die Optima-Fabrik, die Uniformen für die Wehrmacht herstellte. Für die Häftlinge bedeutete die Arbeit extreme Ausbeutung, aber auch eine geringe Überlebenschance, da Inhaber eines Arbeitsausweises bei den ersten Deportationen zunächst zurückgestellt wurden.</p>
+            <p>Die brutale Auflösung des Ghettos im März 1943 ist eine der erschütterndsten Sequenzen in „Schindlers Liste“. Die SS stürmte das Ghetto, zerrte Menschen aus ihren Verstecken und ermordete Tausende auf offener Straße. Die Bewohner wurden einer letzten Selektion unterzogen. Diejenigen, die als „arbeitsfähig“ galten, wurden gezwungen, in das neu errichtete Zwangsarbeitslager Plaszów zu marschieren. Alle anderen – Kinder, Ältere, Kranke – wurden entweder an Ort und Stelle ermordet oder nach Auschwitz-Birkenau deportiert und dort sofort vergast.</p>
+            <p>Der Film fängt die Panik und das Chaos dieser Tage ein. Die Szene mit dem kleinen Mädchen im roten Mantel ist zu einem Symbol für den unschuldigen, individuellen Tod inmitten des anonymen Massenmordes geworden. Oskar Schindlers Fabrik, die Deutsche Emailwarenfabrik (DEF), befand sich direkt außerhalb der Ghettomauern. Während Fabriken wie Optima Teil des Systems der „Vernichtung durch Arbeit“ waren, wurde Schindlers Fabrik durch seinen Mut und seine Menschlichkeit zu einer Arche, die über tausend Menschen das Leben rettete.</p>
+        </details>
+
+        <details>
+            <summary>📖 Das Arbeitslager Płaszów</summary>
+            <p>Der Weg für die Überlebenden der Ghetto-Liquidierung, die als „arbeitsfähig“ eingestuft wurden, führte wenige Kilometer weiter in das Zwangsarbeitslager Plaszów. Dieses Lager wurde auf einem besonders zynischen Areal errichtet – dem Gelände zweier jüdischer Friedhöfe. Die Nazis zwangen die Häftlinge, die Grabsteine herauszureißen und als Baumaterial für Straßen und Fundamente zu verwenden, eine bewusste Entweihung und Zerstörung jüdischer Erinnerung.</p>
+            <p>Ursprünglich als Zwangsarbeitslager konzipiert, wurde Plaszów 1944 in ein Konzentrationslager umgewandelt und damit fest in das mörderische Lagersystem der SS integriert.</p>
+            <p>Unter dem Kommando des sadistischen SS-Hauptsturmführers Amon Göth, der in „Schindlers Liste“ eindringlich porträtiert wird, wurde Plaszów zu einem Ort unvorstellbaren Terrors. Göth regierte mit absoluter, unberechenbarer Willkür. Von der Veranda seiner Villa, die das Lager überblickte und heute noch als Privathaus existiert, schoss er zum Zeitvertreib mit seinem Jagdgewehr auf Häftlinge. Er hetzte seine scharfen Hunde auf Menschen und führte öffentliche Exekutionen durch, um die Gefangenen in ständiger Angst zu halten. Das „Graue Haus“, ein ehemaliges Verwaltungsgebäude des Friedhofs, wurde zur Folterkammer der Gestapo.</p>
+            <p>Das Leben im Lager war geprägt vom Prinzip der „Vernichtung durch Arbeit“. Die Häftlinge mussten unter unmenschlichen Bedingungen im Steinbruch schuften, der zum Lager gehörte. Die Kombination aus zwölfstündigen Arbeitstagen, minimalen Essensrationen, katastrophalen hygienischen Bedingungen und der ständigen Gewalt der SS-Wachen führte zu einer extrem hohen Sterblichkeitsrate. Wer zu schwach oder krank wurde, wurde bei Selektionen aussortiert und an den Exekutionsstätten auf dem Lagergelände erschossen.</p>
+            <p>Für die „Schindlerjuden“ wurde die Fabrik, die schließlich als Außenlager von Plaszów geführt wurde, zu einer Art Arche. Obwohl die Bedingungen auch dort hart waren, bot sie Schutz vor der direkten, willkürlichen Gewalt Amon Göths.</p>
+            <p>Wer das Gelände des ehemaligen Lagers Plaszów heute besucht, betritt auf den ersten Blick ein weitläufiges, hügeliges Naherholungsgebiet. Menschen gehen mit ihren Hunden spazieren, joggen oder genießen die Natur. Es gibt kaum sichtbare Überreste des Lagers, die Baracken wurden abgerissen, die Leichen der Ermordeten von den Nazis kurz vor Kriegsende exhumiert und verbrannt, um die Spuren zu verwischen.</p>
+            <p>Diese friedliche Atmosphäre macht es zu einer Herausforderung, sich das Grauen vorzustellen, das hier stattfand. Nur wenige, verstreute Denkmäler, wie das große „Denkmal für die Opfer des Faschismus“, erinnern an die Vergangenheit.</p>
+            <p>Doch dieser Zustand ändert sich. Nach jahrzehntelanger Vernachlässigung wird das Gelände derzeit umfassend als Gedenkstätte aufgearbeitet. Es entstehen ein neues Museum und ein Besucherzentrum. Das Gelände wird mit markierten Wegen, Informationstafeln und archäologischen Fenstern versehen, die die Fundamente der Baracken und die Umrisse des Lagers wieder sichtbar machen. So wird aus einem Ort des verdrängten Grauens schrittweise eine würdige Gedenkstätte, die es Besuchern ermöglicht, die Geschichte des Lagers zu verstehen und der Zehntausenden Opfer zu gedenken, die hier ihr Leben verloren haben.</p>
+        </details>
+
+        <div class="journal-entry">
+            <h3>✎ Gedanken zu Płaszów</h3>
+            <p style="font-size:0.85rem; color:#666;">Wie fühlt es sich an, an einem Ort zu stehen, über den buchstäblich Gras gewachsen ist, obwohl hier so viel Leid geschah?</p>
+            <textarea id="di_plaszow" placeholder="Deine Gedanken..."></textarea>
+            <div class="photo-upload">
+                <label for="img_di_pla">Foto hinzufügen</label>
+                <input type="file" id="img_di_pla" accept="image/*" onchange="handleImage(this, 'data_di_pla')">
+                <div id="container_data_di_pla" class="preview-container" style="display:none;">
+                    <img id="preview_data_di_pla" class="preview-img">
+                    <button class="delete-img-btn" onclick="deleteImage('data_di_pla', 'img_di_pla')">Foto löschen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MITTWOCH -->
+    <div id="mi" class="tab-content">
+        <h2>Mittwoch, 30.09.</h2>
+        <p><strong>Das Unfassbare – Auschwitz-Birkenau</strong></p>
+
+        <div class="info-box">
+            <strong>Hinweis für die Besichtigung:</strong><br>
+            Die Konfrontation mit diesen Orten wird Gefühle in dir auslösen. Vielleicht wirst du Trauer spüren, Wut, Fassungslosigkeit, Verwirrung oder auch eine seltsame Leere. All diese Reaktionen sind absolut in Ordnung und menschlich. Es gibt keine richtige oder falsche Art, hier zu empfinden. Schäme dich deiner Gefühle nicht, egal ob Tränen fließen oder du still wirst. Diese Emotionen zuzulassen, ist ein wichtiger und notwendiger Teil der Verarbeitung.
+        </div>
+
+        <div class="journal-entry">
+            <h3>✎ Vor morgen</h3>
+            <p style="font-size:0.85rem; color:#666;">Morgen fahren wir nach Auschwitz. Wie geht es mir jetzt gerade in der Gruppe?<br>Bin ich bereit? Was brauche ich, um es zu sein?</p>
+            <textarea id="mi_vorbereitung" placeholder="Deine Gedanken vor dem Besuch..."></textarea>
+        </div>
+
+        <details>
+            <summary>📖 Einführung & Auschwitz I (Stammlager)</summary>
+            <p>Der Name Auschwitz ist weltweit zum Synonym für den Holocaust und den Völkermord geworden. Doch was wir heute als Museum besuchen, war in Wirklichkeit ein riesiger, von der SS verwalteter Komplex aus über 40 Lagern. Die Wahl des Standortes war kein Zufall. Die polnische Stadt Oświęcim (von den Deutschen in Auschwitz umbenannt) war ein zentraler Eisenbahnknotenpunkt. Diese Lage ermöglichte es der SS, Menschen aus fast allen von Deutschland besetzten Ländern Europas effizient hierher zu deportieren.</p>
+            <p>Auschwitz erfüllte eine schreckliche Doppelfunktion, die es von anderen Orten unterscheidet: Es war zugleich ein Konzentrationslager, in dem Menschen durch Zwangsarbeit, Hunger und Terror systematisch zu Tode geschunden wurden („Vernichtung durch Arbeit“), und das größte Vernichtungslager der Nazis, das eigens für den industriellen Massenmord, vor allem an den europäischen Juden, errichtet wurde. Um die unvorstellbare Dimension dieses Ortes zu begreifen, ist es wichtig, seine drei Hauptteile zu verstehen, die jeweils unterschiedliche, aber eng miteinander verbundene Funktionen hatten.</p>
+            
+            <h4>Auschwitz I</h4>
+            <p>Das Stammlager mit seinen Backsteinblöcken war das administrative Zentrum und diente als Konzentrationslager für politische Gefangene.</p>
+            <p>Der Rundgang beginnt mit dem Gang durch das Eingangstor mit dem Schriftzug „Arbeit macht frei“. Die Inschrift ist der pure Zynismus. Für die allermeisten Häftlinge war die Arbeit hier kein Weg in die Freiheit, sondern ein Mittel zur Vernichtung. Das Lagerorchester musste in der Nähe des Tores spielen, wenn die Häftlinge morgens zur Arbeit aus- und abends erschöpft wieder einmarschierten, oft trugen sie dabei die Leichen ihrer Kameraden.</p>
+            <p>Viele der ehemaligen Häftlingsblöcke beherbergen heute die Museumsausstellungen. Sie konfrontieren uns mit den verschiedenen Dimensionen des Verbrechens.</p>
+            <p>Im Block 4 wird der Prozess der Ausrottung dokumentiert. Karten zeigen die Transportwege der Deportierten aus ganz Europa. Eine Urne mit menschlicher Asche und Fotos von der Ankunft an der Rampe machen das Ausmaß des Mordens greifbar.</p>
+            <p>Block 5 zeigt die materiellen Beweise des Raubes, der mit dem Mord einherging. In großen Vitrinen sehen wir, was den Opfern bei ihrer Ankunft abgenommen wurde: Berge von Brillen, Prothesen, Tausende Koffer, die oft noch mit den Namen und Adressen ihrer Besitzer versehen sind – ein Zeichen der falschen Hoffnung auf ein neues Leben. Am erschütterndsten sind die Kinderschuhe und die fast zwei Tonnen menschliches Haar, das den ermordeten Frauen abgeschnitten wurde, um es als Rohstoff an deutsche Firmen zu verkaufen.</p>
+            <p>In Block 6 wird die systematische Entmenschlichung der Gefangenen gezeigt. Wir sehen die gestreifte Häftlingskleidung mit den verschiedenen farbigen Winkeln, die die Häftlingskategorien markierten (politisch, kriminell, jüdisch etc.). Besonders eindrücklich sind Tausende von Registrierungsfotos, die die SS anfertigen ließ – jeder Häftling wurde in drei Posen fotografiert. Sie zeigen die Verwandlung von Menschen in ausgemergelte, gebrochene Gestalten innerhalb weniger Wochen.</p>
+            <p>Block 11, der sogenannte „Todesblock“, war das Lagergefängnis und ein Ort besonderen Schreckens. Im Keller befanden sich spezielle Folterzellen: Stehzellen, in denen vier Häftlinge auf weniger als einem Quadratmeter die Nacht verbringen mussten; Dunkelzellen ohne Licht und Luft; und Hungerzellen, in denen Häftlinge zum Tod durch Verdursten und Verhungern verurteilt wurden. Hier opferte sich der Franziskanerpater Maximilian Kolbe für einen Mithäftling.</p>
+            <p>Zwischen Block 10 und 11 befindet sich der Exekutionshof. An der „Schwarzen Wand“ wurden Tausende Häftlinge, hauptsächlich Polen, durch Genickschuss ermordet. Die Fenster des benachbarten Blocks 10, in dem grausame medizinische Experimente stattfanden, waren verblendet, damit niemand die Hinrichtungen beobachten konnte.</p>
+            <p>Etwas außerhalb des umzäunten Lagerbereichs befindet sich das erste Krematorium mit der ersten stationären Gaskammer. Es wurde in einem ehemaligen Munitionsbunker eingerichtet. Hier fanden im September 1941 die ersten Massentötungsversuche mit dem Giftgas Zyklon B an sowjetischen Kriegsgefangenen und polnischen Häftlingen statt. Dieses Gebäude war quasi der Prototyp für die späteren, viel größeren Mordfabriken in Birkenau.</p>
+        </details>
+
+        <div class="journal-entry">
+            <h3>✎ Gedanken zu Auschwitz I</h3>
+            <textarea id="mi_auschwitz1" placeholder="Was bleibt im Kopf?"></textarea>
+        </div>
+
+        <details>
+            <summary>📖 Auschwitz II – Birkenau</summary>
+            <p>Drei Kilometer vom Stammlager entfernt, auf dem Gelände des zerstörten Dorfes Brzezinka, errichtete die SS ab 1941 ein riesiges Lager, das zum größten Vernichtungszentrum des Dritten Reiches wurde. Die schiere Größe des Geländes ist überwältigend und sollte die Häftlinge bewusst einschüchtern. Dieses riesige Lager wurde eigens für den Zweck des Massenmordes gebaut.</p>
+            <p>Die Züge mit den Deportierten aus ganz Europa fuhren direkt durch das Haupttor in das Lager hinein und hielten auf der langen Rampe im Zentrum des Lagers. Hier fand die „Selektion“ statt. SS-Ärzte entschieden innerhalb von Sekunden über Leben und Tod. Wer als „arbeitsfähig“ eingestuft wurde, wurde auf die eine Seite geschickt, alle anderen – Kinder, ihre Mütter, Ältere und Kranke, etwa 70–75% eines jeden Transports – wurden auf die andere Seite geschickt und gingen direkt in den Tod in den Gaskammern.</p>
+            <p>Rechts und links der Rampe sehen wir die endlosen Reihen von Holz- und Steinbaracken. Hier wurden die als arbeitsfähig selektierten Häftlinge untergebracht. Die Lebensbedingungen waren unvorstellbar: Hunderte Menschen waren in eine Baracke gepfercht, schliefen auf dreistöckigen Holzpritschen, oft mehrere Personen auf einer einzigen Ebene. Es gab kaum sanitäre Anlagen; Schlamm, Ungeziefer und Krankheiten waren allgegenwärtig.</p>
+            <p>Die „Zentralsauna“ im hinteren Bereich des Lagers war das Aufnahmegebäude für die registrierten Häftlinge. Hier fand der letzte Akt der Entmenschlichung statt. Der Begriff „Zentralsauna“ ist ein zynischer Euphemismus der SS, der bewusst ein Bild von Hygiene, Wärme und Reinigung erzeugen sollte. In Wahrheit war dieses große Gebäude, das sich in der Nähe der Krematorien IV und V befindet, das genaue Gegenteil: Es war die zentrale Aufnahme- und Verarbeitungsstation für die Häftlinge, die bei der Selektion an der Rampe als „arbeitsfähig“ eingestuft und nicht sofort in die Gaskammern geschickt wurden. Hier fand der letzte, systematische Akt der Entmenschlichung statt, der einen Menschen mit Namen und Identität in eine nummerierte, austauschbare Arbeitskraft verwandelte.</p>
+            <p>Der Prozess, den die Häftlinge in der „Sauna“ durchlaufen mussten, folgte einem brutalen, industriell organisierten Ablauf. Die Neuankömmlinge mussten sich vollständig entkleiden. Ihnen wurden ihre letzten persönlichen Gegenstände abgenommen – Familienfotos, Briefe, Schmuck, alles, was sie noch in ihren Taschen versteckt hatten. Dies war der endgültige Bruch mit ihrem bisherigen Leben. Anschließend wurde den Häftlingen am ganzen Körper die gesamte Behaarung abgeschoren. Dies war nicht nur eine zutiefst demütigende Prozedur, sondern diente auch der wirtschaftlichen Verwertung: Das Haar der Frauen wurde gesammelt, gereinigt und als Rohstoff (z.B. für Filz) an deutsche Firmen verkauft. Die Häftlinge wurden dann in einen Raum gezwungen, wo man sie einer brutalen „Desinfektion“ unterzog. Sie wurden mit übelriechenden, oft schmerzhaften Chemikalien besprüht oder mussten in Desinfektionsbecken steigen. Dies hatte nichts mit persönlicher Hygiene zu tun, sondern diente aus Sicht der SS ausschließlich der Seuchenprävention, um die Arbeitskraft der Häftlinge für die deutsche Kriegsindustrie zu erhalten. Nach der Desinfektion folgte eine Dusche, oft mit eiskaltem oder brühend heißem Wasser. Danach mussten die Häftlinge stundenlang nackt in kalten, zugigen Räumen warten, völlig schutzlos und gedemütigt. Schließlich erhielten sie die gestreifte Häftlingskleidung, meist dünne, zerschlissene Uniformen, die selten passten und oft noch mit Läusen von ihren Vorbesitzern befallen waren. Der letzte Schritt war der schmerzhafteste und endgültigste: Die Häftlingsnummer wurde ihnen mit Tinte auf den linken Unterarm tätowiert. Von diesem Moment an existierte ihr Name offiziell nicht mehr. Sie waren nur noch eine Nummer, ein Eigentum der SS. Die „Sauna“ war also keine Einrichtung zum Wohle der Häftlinge. Sie war eine perfekt organisierte Fabrik, die zwei Hauptziele verfolgte: die totale Brechung des menschlichen Willens und der individuellen Identität sowie die effiziente Vorbereitung der Häftlinge für ihren Einsatz als Sklavenarbeiter im System der „Vernichtung durch Arbeit“.</p>
+            <p>Genau diesen brutalen Prozess der Entmenschlichung hat Steven Spielberg in „Schindlers Liste“ beeindruckend inszeniert. Ihr erinnert euch an die Szene, in der die „Schindlerfrauen“ fälschlicherweise nach Auschwitz-Birkenau deportiert werden. Sie durchlaufen exakt diese Prozedur: Sie werden gezwungen, sich zu entkleiden, ihre Köpfe werden kahlgeschoren und sie werden in einen großen, gefliesten Raum getrieben, der mit Duschköpfen ausgestattet ist. Der Film erzeugt hier eine fast unerträgliche Spannung, denn die Frauen – und wir als Zuschauer – glauben in diesem Moment, sie seien in einer Gaskammer. Ihr Schreien und ihre Todesangst sind real. Als dann aus den Duschköpfen kein tödliches Gas, sondern eiskaltes Wasser strömt, ist die Erleichterung spürbar, aber gleichzeitig wird die grausame Realität des Ortes deutlich. Der Film zeigt hier historisch korrekt die Funktion der „Zentralsauna“: Da die Frauen als registrierte Zwangsarbeiterinnen für Schindlers neue Fabrik vorgesehen waren, wurden sie nicht zur sofortigen Vernichtung, sondern zur entwürdigenden „Aufnahme“ als Häftlinge in diesen Teil des Lagers geschickt. Die Szene verdeutlicht auf eindringlichste Weise die ständige, willkürliche Nähe von Leben und Tod in Auschwitz-Birkenau.</p>
+            <p>In der Nähe der „Sauna“ befanden sich die riesigen Lagerhallen, in denen die Besitztümer der Ermordeten sortiert wurden. Die Häftlinge, die hier arbeiten mussten, nannten diesen Ort zynisch „Kanada“, weil sie Kanada als ein Land des Überflusses ansahen. Hier wurden Kleidung, Wertsachen, Familienfotos und Alltagsgegenstände für die Weiterverwertung im Deutschen Reich vorbereitet – ein Beweis für den systematischen Raubmord.</p>
+            <p>Am Ende des Lagergeländes befinden sich die Ruinen der vier großen Krematorien II, III, IV und V. Anders als in Auschwitz I waren dies industriell konzipierte Mordfabriken, die Tausende Menschen pro Tag töten und verbrennen konnten. Um die Opfer bis zum letzten Moment zu täuschen, waren die größten Gaskammern unterirdisch angelegt und als Duschräume getarnt. Kurz vor der Befreiung des Lagers im Januar 1945 sprengte die SS diese Gebäude, um die Spuren ihrer Verbrechen zu verwischen. Die Trümmerfelder, die wir heute sehen, sind eine eindringliche Mahnung an diesen Versuch. Zwischen den Ruinen befindet sich heute das Internationale Denkmal für die Opfer von Auschwitz.</p>
+        </details>
+
+        <div class="journal-entry">
+            <h3>✎ Gedanken zu Auschwitz II - Birkenau</h3>
+            <textarea id="mi_auschwitz2" placeholder="Deine Eindrücke..."></textarea>
+        </div>
+
+        <details>
+            <summary>📖 Auschwitz III – Monowitz & Die Befreiung</summary>
+            <h4>Auschwitz III – Monowitz</h4>
+            <p>Der dritte große Teil des Komplexes befand sich etwa sechs Kilometer vom Stammlager entfernt. Den werden wir nicht besichtigen. Es war ein riesiges Zwangsarbeitslager, das hauptsächlich für die Bedürfnisse des deutschen Chemiekonzerns IG Farben errichtet wurde. Tausende Häftlinge wurden hier unter unmenschlichen Bedingungen zur Sklavenarbeit beim Bau der Buna-Werke gezwungen, einer Fabrik für synthetischen Kautschuk und Treibstoff. Hier herrschte das Prinzip der „Vernichtung durch Arbeit“: Die Häftlinge wurden durch die Kombination aus schwerster körperlicher Arbeit, minimaler Ernährung und katastrophalen hygienischen Bedingungen systematisch zu Tode geschunden. Wer zu krank oder zu schwach zum Arbeiten war, wurde bei Selektionen aussortiert und zur Ermordung in die Gaskammern von Birkenau zurückgeschickt. Berühmte Überlebende wie Elie Wiesel und Primo Levi waren in Monowitz inhaftiert und haben in ihren Büchern eindringlich über ihre Erfahrungen berichtet. Zusätzlich war Monowitz das Verwaltungszentrum für Dutzende kleinere Nebenlager, die Zwangsarbeiter für Bergwerke und andere deutsche Industriebetriebe in der Region bereitstellten.</p>
+            
+            <h4>Die Befreiung und das Ausmaß des Verbrechens</h4>
+            <p>Als die sowjetische Rote Armee im Winter 1944/45 durch Polen vorrückte, begannen die Nazis in panischer Eile, die Spuren ihrer Verbrechen in Auschwitz zu verwischen. Sie sprengten die Gaskammern und Krematorien, verbrannten Häftlingsakten und versuchten, die riesigen Lagerhallen mit den geraubten Besitztümern der Opfer zu leeren.</p>
+            <p>Mitte Januar 1945, nur wenige Tage vor der Ankunft der sowjetischen Truppen, evakuierte die SS das Lager auf brutalste Weise. Fast 60.000 Häftlinge, die noch gehen konnten, wurden auf die sogenannten „Todesmärsche“ gezwungen. In eisiger Kälte, kaum bekleidet und ohne Nahrung, mussten sie hunderte Kilometer nach Westen in Richtung Deutschland marschieren. Tausende, die vor Erschöpfung zusammenbrachen oder nicht mithalten konnten, wurden am Wegesrand erschossen.</p>
+            <p>Als die Soldaten der Roten Armee am 27. Januar 1945 das Lager betraten, fanden sie ein Bild des Grauens vor. Sie befreiten etwa 7.500 Häftlinge, die von der SS zurückgelassen worden waren, weil sie zu krank, zu schwach oder zu jung für den Marsch waren. Diese Überlebenden waren lebende Skelette, die zwischen Leben und Tod schwebten. Die Soldaten fanden außerdem die Leichen Tausender Ermordeter und die unvorstellbaren Beweise des Massenmordes in den „Kanada“-Magazinen.</p>
+            <p>Insgesamt wurden zwischen 1940 und 1945 mindestens 1,3 Millionen Menschen nach Auschwitz deportiert. Etwa 1,1 Millionen von ihnen wurden hier ermordet. Die Opfergruppen spiegeln die rassistische und politische Verfolgungsideologie der Nazis wider.</p>
+            <p>Die bei weitem größte Opfergruppe waren die Juden. Etwa 1,1 Millionen Juden aus ganz Europa wurden nach Auschwitz deportiert. Fast eine Million von ihnen wurden ermordet, die meisten unmittelbar nach ihrer Ankunft in den Gaskammern von Birkenau. Auschwitz war das zentrale Vernichtungslager der „Endlösung der Judenfrage“.</p>
+            <p>Etwa 140.000 Polen, meist politische Gefangene, Widerstandskämpfer und Intellektuelle, wurden nach Auschwitz verschleppt. Etwa die Hälfte von ihnen überlebte das Lager nicht. Ungefähr 23.000 Sinti und Roma wurden nach Auschwitz deportiert. Fast alle von ihnen wurden ermordet, etwa bei der Liquidierung des sogenannten „Zigeunerfamilienlagers“ in Birkenau.</p>
+            <p>Von den etwa 15.000 sowjetischen Kriegsgefangenen, die ins Lager gebracht wurden, starben die meisten an Hunger, Krankheiten, durch Exekutionen oder bei den ersten Vergasungsversuchen mit Zyklon B.</p>
+            <p>Tausende weitere Häftlinge aus verschiedenen Nationen wurden ebenfalls in Auschwitz inhaftiert und ermordet, weil sie als politische Gegner, Zeugen Jehovas, Homosexuelle oder aus anderen Gründen verfolgt wurden.</p>
+        </details>
+
+        <div class="journal-entry">
+            <h3>✎ Abendliche Reflexion</h3>
+            <p style="font-size:0.85rem; color:#666;">Was bleibt?<br>Was nehme ich von diesem Tag mit – für mich persönlich?<br>Sehe ich mich selbst in einer Art Verantwortung? Wenn ja: wofür, und wem gegenüber?<br>Glaube ich, dass es wichtig ist, sich mit dieser Geschichte auseinanderzusetzen – gerade heute?</p>
+            <textarea id="mi_abend" placeholder="Gedanken, Gefühle, Fragmente..." style="min-height: 200px;"></textarea>
+            
+            <p style="font-size:0.85rem; color:#666; margin-top:15px;">Ein Moment der Menschlichkeit oder ein Detail, das mir im Gedächtnis geblieben ist (z. B. ein Foto, ein Koffer, ein Name) ...</p>
+            <textarea id="mi_abend2" placeholder="Etwas, das mich heute sprachlos gemacht hat..."></textarea>
+            
+            <div class="photo-upload">
+                <label for="img_mi_ref">Eindruck / Bild hinzufügen</label>
+                <input type="file" id="img_mi_ref" accept="image/*" onchange="handleImage(this, 'data_mi_ref')">
+                <div id="container_data_mi_ref" class="preview-container" style="display:none;">
+                    <img id="preview_data_mi_ref" class="preview-img">
+                    <button class="delete-img-btn" onclick="deleteImage('data_mi_ref', 'img_mi_ref')">Foto löschen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DONNERSTAG -->
+    <div id="do" class="tab-content">
+        <h2>Donnerstag, 01.10.</h2>
+        <p><strong>Gesichter und Stimmen – Begegnung und Abschluss</strong></p>
+
+        <details>
+            <summary>📖 Die Zeitzeugen</summary>
+            <p>Zahlen allein können das Grauen nicht fassbar machen. Es sind die Geschichten Einzelner, die uns die menschliche Dimension dieser Tragödie vor Augen führen. Leider leben nur noch wenige Menschen, die diese grausame Zeit selbst miterlebt haben und heute noch persönlich davon berichten können. Umso mehr Verantwortung tragen inzwischen ihre Kinder und Enkel: Als sogenannte „zweite und dritte Generation" geben sie die Erinnerungen ihrer Eltern und Großeltern weiter – und werden so selbst zu Stimmen, die dafür sorgen, dass diese Geschichten nicht verstummen.</p>
+            <ul>
+                <li><strong>Kazimierz Smoleń (1920–2012):</strong> Als junger Mann im polnischen Widerstand 1940 verhaftet und nach Auschwitz deportiert, überlebte er über vier Jahre im Lager. Nach dem Krieg wurde er von 1955 bis 1990 Direktor der Gedenkstätte Auschwitz-Birkenau.</li>
+                <li><strong>Wilhelm Brasse (1917–2012):</strong> Der polnische Fotograf wurde von der SS gezwungen, als Lagerfotograf zu arbeiten und auch die medizinischen Experimente Josef Mengeles zu dokumentieren. Kurz vor der Befreiung widersetzte er sich dem Befehl, die Fotos zu vernichten, und rettete so Zehntausende Bilder.</li>
+                <li><strong>Halina Birenbaum (*1929):</strong> Sie überlebte das Warschauer Ghetto, Majdanek und Auschwitz-Birkenau, wanderte nach Israel aus und wurde Schriftstellerin. Ihr Buch „Die Hoffnung stirbt zuletzt“ schildert das Überleben als Kind im Holocaust.</li>
+                <li><strong>Esther Bejarano (1924–2021):</strong> Als deutsche Jüdin nach Auschwitz deportiert, überlebte sie als Akkordeonistin im „Mädchenorchester von Auschwitz“ und wurde bis zu ihrem Tod eine unermüdliche Stimme gegen Rassismus und Antisemitismus.</li>
+            </ul>
+            <p>Wir werden voraussichtlich Monika Goldwasser treffen. Damit werden wir zu Zeugen ihrer Geschichte. Sie kam 1941 als Kind einer jüdischen Familie zur Welt. Um das Leben ihrer Tochter zu schützen, brachten ihre Eltern sie zu einer Familie auf dem Land, bevor sie deportiert und später ermordet wurden. Monika wurde zum Ursulinenkloster nach Krakau gebracht und dort von einem katholischen Ehepaar adoptiert. Erst mit 8 oder 10 Jahren erfuhr sie, wer sie wirklich ist.</p>
+            <p>Monika Goldwasser trifft sich seit vielen Jahren mit Schülern, um ihre Geschichte zu erzählen. Ein Satz, der ihr dabei besonders wichtig ist, lautet:</p>
+            <p style="text-align:center; font-style:italic; font-weight:bold; color:var(--primary-color);">Güte ist das höchste Gut, dass wir haben.</p>
+        </details>
+
+        <div class="journal-entry">
+            <h3>✎ Notizen aus dem Zeitzeugengespräch</h3>
+            <p style="font-size:0.85rem; color:#666;">Was möchte ich von ihrer Geschichte niemals vergessen?</p>
+            <textarea id="do_zeitzeugen" placeholder="Notizen..."></textarea>
+        </div>
+
+        <div class="journal-entry">
+            <h3>✎ Feedbackrunde</h3>
+            <p style="font-size:0.85rem; color:#666;">Wenn ich meiner Familie oder meinen Freunden zu Hause nur eine Sache von dieser Reise erzählen dürfte, was wäre das?<br>Welche belastende Erfahrung möchte ich nicht mit nach Hause nehmen?</p>
+            <textarea id="do_feedback" placeholder="Dein Fazit..."></textarea>
+        </div>
+
+        <div class="journal-entry">
+            <h3>✎ Die Brücke zum Heute</h3>
+            <p style="font-size:0.85rem; color:#666;">„Erinnern für die Zukunft“ – was bedeutet dieses Motto nach dieser Woche für mich ganz persönlich, in meinem Alltag?</p>
+            <textarea id="do_bruecke" placeholder="Deine Gedanken..."></textarea>
+        </div>
+    </div>
+
+    <!-- FREITAG -->
+    <div id="fr" class="tab-content">
+        <h2>Freitag, 02.10.</h2>
+        <p><strong>Rückreise – Das Leben danach</strong></p>
+
+        <div class="journal-entry">
+            <h3>✎ Kontakte & Erinnerungen</h3>
+            <p style="font-size:0.85rem; color:#666;">Namen / Kontakte von Leuten aus anderen Klassen, die ich auf dieser Fahrt kennengelernt habe:</p>
+            <textarea id="fr_kontakte" placeholder="Namen, Nummern, Instas..."></textarea>
+        </div>
+
+        <div class="journal-entry">
+            <h3>📷 Meine Krakau-Highlights</h3>
+            <textarea id="fr_highlights" placeholder="Die besten Momente der Fahrt..."></textarea>
+            <div class="photo-upload">
+                <label for="img_fr_high">Highlight-Foto hinzufügen</label>
+                <input type="file" id="img_fr_high" accept="image/*" onchange="handleImage(this, 'data_fr_high')">
+                <div id="container_data_fr_high" class="preview-container" style="display:none;">
+                    <img id="preview_data_fr_high" class="preview-img">
+                    <button class="delete-img-btn" onclick="deleteImage('data_fr_high', 'img_fr_high')">Foto löschen</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="journal-entry">
+            <h3>✎ Blick aus dem Fenster</h3>
+            <p style="font-size:0.85rem; color:#666;">Was denke ich gerade, auf der Rückfahrt aus dem Fenster schauend?</p>
+            <textarea id="fr_fenster" placeholder="Letzte Gedanken..."></textarea>
+        </div>
+
+        <div class="info-box" style="text-align: center;">
+            <p>Wichtig ist, dass wir als Gruppe füreinander da sind und miteinander im Gespräch bleiben. Denn nur durch die Erinnerung und dazu gehört auch die emotionale Erinnerung können wir sicherstellen, dass sich eine solche Katastrophe niemals wiederholt.</p>
+            <p><strong>Danke, dass du dabei warst.</strong></p>
+        </div>
+
+        <button class="delete-btn" onclick="clearData()">Alle Daten & Bilder vom Handy löschen</button>
+    </div>
+
+    <!-- Einbindung der JS-Speicherlogik -->
+    <script src="app.js"></script>
+</body>
+</html>
